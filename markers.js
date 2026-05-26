@@ -38,7 +38,13 @@ function getScreenSpaceClusters(items, minPixelDistance = 50) {
 
 // Clear all active markers from the map
 function clearMarkers() {
-    activeMarkers.forEach(m => m.remove());
+    activeMarkers.forEach(item => {
+        if (item && item.marker) {
+            item.marker.remove();
+        } else if (item && item.remove) {
+            item.remove();
+        }
+    });
     activeMarkers = [];
 }
 
@@ -98,7 +104,7 @@ function renderCurrentMarkers() {
                     flyToCoordinates(cluster.centerCoords[0], cluster.centerCoords[1], map.getZoom() + 2.2);
                 });
                 
-                activeMarkers.push(marker);
+                activeMarkers.push({ id: 'cluster', marker: marker, type: 'user-cluster', coords: cluster.centerCoords });
             } else {
                 // Render single user marker
                 const user = cluster.items[0];
@@ -139,7 +145,7 @@ function renderCurrentMarkers() {
                     .setPopup(popup)
                     .addTo(map);
                     
-                activeMarkers.push(marker);
+                activeMarkers.push({ id: user.id, marker: marker, type: 'user' });
             }
         });
     } else {
@@ -176,7 +182,7 @@ function renderCurrentMarkers() {
                     flyToCoordinates(cluster.centerCoords[0], cluster.centerCoords[1], map.getZoom() + 2.5);
                 });
                 
-                activeMarkers.push(marker);
+                activeMarkers.push({ id: 'cluster', marker: marker, type: 'product-cluster', coords: cluster.centerCoords });
             } else {
                 // Render single product marker
                 const product = cluster.items[0];
@@ -210,7 +216,7 @@ function renderCurrentMarkers() {
                     .setPopup(popup)
                     .addTo(map);
                     
-                activeMarkers.push(marker);
+                activeMarkers.push({ id: product.id, marker: marker, type: 'product' });
             }
         });
     }

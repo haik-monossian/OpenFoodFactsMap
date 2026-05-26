@@ -21,6 +21,10 @@ const searchContainer = document.getElementById('search-container');
 const searchInput = document.getElementById('city-search');
 const searchError = document.getElementById('search-error');
 
+if (searchInput) {
+    searchInput.placeholder = currentMode === 'eye' ? "Rechercher un scan..." : "Rechercher un contributeur ou une ville...";
+}
+
 if (searchToggleBtn && searchContainer && searchInput) {
     searchToggleBtn.addEventListener('click', () => {
         searchContainer.classList.toggle('hidden');
@@ -33,13 +37,107 @@ if (searchToggleBtn && searchContainer && searchInput) {
 }
 
 // Dynamic Search via OpenStreetMap Nominatim API
+// Dynamic Search (Local products/contributors or fallback to OpenStreetMap Nominatim API)
 async function handleSearch() {
     if (!searchInput) return;
     const query = searchInput.value.trim();
     if (!query) return;
+    const queryLower = query.toLowerCase();
 
     if (searchError) searchError.classList.add('hidden');
-    showNotification(`Recherche de "${query}"...`);
+
+    // 1. Search locally based on currentMode
+    if (currentMode === 'eye') {
+        // Search local scanned products (by name or brand)
+        const match = localScannedProducts.find(p => 
+            p.name.toLowerCase().includes(queryLower) || 
+            p.brand.toLowerCase().includes(queryLower)
+        );
+        
+        if (match) {
+            showNotification(`Produit trouvé : ${match.name}`);
+            
+            const targetZoom = 16.0;
+            const currentZoom = map.getZoom();
+            const currentCenter = map.getCenter();
+            
+            // Check if we are already centered near the product and zoomed in
+            const isAlreadyThere = Math.abs(currentZoom - targetZoom) < 0.1 &&
+                                   Math.abs(currentCenter.lng - match.coords[0]) < 0.001 &&
+                                   Math.abs(currentCenter.lat - match.coords[1]) < 0.001;
+                                   
+            const openProductPopup = () => {
+                const matchItem = activeMarkers.find(item => item.id === match.id);
+                if (matchItem && matchItem.marker) {
+                    const popup = matchItem.marker.getPopup();
+                    if (popup && !popup.isOpen()) {
+                        matchItem.marker.togglePopup();
+                    }
+                }
+            };
+
+            if (isAlreadyThere) {
+                openProductPopup();
+            } else {
+                flyToCoordinates(match.coords[0], match.coords[1], targetZoom);
+                map.once('moveend', () => {
+                    setTimeout(openProductPopup, 150);
+                });
+            }
+            
+            searchInput.value = ''; 
+            searchContainer.classList.add('hidden'); 
+            return;
+        }
+    } else if (currentMode === 'users') {
+        // Search mock users (by name, city or products they scanned)
+        const activeUsers = mockUsers.filter(u => showMyProfile || u.id !== 'me');
+        const match = activeUsers.find(u => {
+            const nameMatch = u.name.toLowerCase().includes(queryLower);
+            const cityMatch = u.city.toLowerCase().includes(queryLower);
+            const productMatch = u.products && u.products.some(p => p.toLowerCase().includes(queryLower));
+            return nameMatch || cityMatch || productMatch;
+        });
+        
+        if (match) {
+            showNotification(`Contributeur trouvé : ${match.name}`);
+            
+            const targetZoom = 14.0;
+            const currentZoom = map.getZoom();
+            const currentCenter = map.getCenter();
+            
+            // Check if we are already centered near the user and zoomed in
+            const isAlreadyThere = Math.abs(currentZoom - targetZoom) < 0.1 &&
+                                   Math.abs(currentCenter.lng - match.coords[0]) < 0.001 &&
+                                   Math.abs(currentCenter.lat - match.coords[1]) < 0.001;
+                                   
+            const openUserPopup = () => {
+                const matchItem = activeMarkers.find(item => item.id === match.id);
+                if (matchItem && matchItem.marker) {
+                    const popup = matchItem.marker.getPopup();
+                    if (popup && !popup.isOpen()) {
+                        matchItem.marker.togglePopup();
+                    }
+                }
+            };
+
+            if (isAlreadyThere) {
+                openUserPopup();
+            } else {
+                flyToCoordinates(match.coords[0], match.coords[1], targetZoom);
+                map.once('moveend', () => {
+                    setTimeout(openUserPopup, 150);
+                });
+            }
+            
+            searchInput.value = ''; 
+            searchContainer.classList.add('hidden'); 
+            return;
+        }
+    }
+
+    // 2. Fallback to OpenStreetMap Nominatim API for city names
+    showNotification(`Recherche de la ville "${query}"...`);
 
     try {
         const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
@@ -93,6 +191,10 @@ if (modeToggleBtn && modeUsersContainer && modeEyeContainer) {
             modeUsersContainer.classList.add('hidden');
             modeEyeContainer.classList.remove('hidden');
             
+            if (searchInput) {
+                searchInput.placeholder = "Rechercher un scan...";
+            }
+            
             showNotification('Mode Observateur : Vos produits scannés localement');
             
             // Set current zoom threshold before drawing
@@ -105,6 +207,10 @@ if (modeToggleBtn && modeUsersContainer && modeEyeContainer) {
             currentMode = 'users';
             modeEyeContainer.classList.add('hidden');
             modeUsersContainer.classList.remove('hidden');
+            
+            if (searchInput) {
+                searchInput.placeholder = "Rechercher un contributeur ou une ville...";
+            }
             
             showNotification('Mode Communauté : Utilisateurs et listes de scans');
             
