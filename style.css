@@ -142,6 +142,16 @@ body, html {
     padding: 0 14px;
 }
 
+.control-btn.active {
+    border-color: var(--border-hover) !important;
+    box-shadow: 0 0 12px var(--accent-glow) !important;
+    background: rgba(255, 135, 20, 0.15) !important;
+}
+
+.control-btn.active i {
+    color: var(--accent-color) !important;
+}
+
 .mode-btn-content {
     display: flex;
     align-items: center;
@@ -202,6 +212,24 @@ body, html {
 
 #city-search::placeholder {
     color: rgba(255, 255, 255, 0.35);
+    text-overflow: clip;
+    white-space: nowrap;
+}
+
+#city-search.scroll-placeholder-active:not(:focus)::placeholder {
+    animation: scroll-placeholder 8s linear infinite;
+}
+
+@keyframes scroll-placeholder {
+    0%, 20% {
+        text-indent: 0;
+    }
+    80%, 90% {
+        text-indent: -160px;
+    }
+    90.01%, 100% {
+        text-indent: 0;
+    }
 }
 
 .search-error-tooltip {
@@ -413,10 +441,18 @@ body, html {
 /* Responsive adjustments */
 @media (max-width: 600px) {
     .telemetry-bar {
-        top: 10px;
-        left: 10px;
+        top: 62px;
+        right: 10px;
+        left: auto;
         font-size: 9px;
         gap: 6px;
+        background: rgba(12, 14, 20, 0.7);
+        padding: 5px 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        backdrop-filter: blur(var(--glass-blur));
+        height: auto;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
     }
     .top-right-controls {
         top: 10px;

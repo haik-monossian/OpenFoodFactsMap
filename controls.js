@@ -21,8 +21,22 @@ const searchContainer = document.getElementById('search-container');
 const searchInput = document.getElementById('city-search');
 const searchError = document.getElementById('search-error');
 
+function updateSearchPlaceholder() {
+    if (!searchInput) return;
+    if (currentMode === 'eye') {
+        searchInput.placeholder = "Rechercher un scan...";
+        searchInput.classList.remove('scroll-placeholder-active');
+    } else if (currentMode === 'followed') {
+        searchInput.placeholder = "Rechercher un suivi...";
+        searchInput.classList.remove('scroll-placeholder-active');
+    } else {
+        searchInput.placeholder = "Rechercher un contributeur ou une ville...";
+        searchInput.classList.add('scroll-placeholder-active');
+    }
+}
+
 if (searchInput) {
-    searchInput.placeholder = currentMode === 'eye' ? "Rechercher un scan..." : "Rechercher un contributeur ou une ville...";
+    updateSearchPlaceholder();
 }
 
 if (searchToggleBtn && searchContainer && searchInput) {
@@ -89,7 +103,7 @@ async function handleSearch() {
             searchContainer.classList.add('hidden'); 
             return;
         }
-    } else if (currentMode === 'users') {
+    } else if (currentMode === 'users' || currentMode === 'followed') {
         // Search mock users (by name, city or products they scanned)
         const activeUsers = mockUsers.filter(u => showMyProfile || u.id !== 'me');
         const match = activeUsers.find(u => {
@@ -101,6 +115,15 @@ async function handleSearch() {
         
         if (match) {
             showNotification(`Contributeur trouvé : ${match.name}`);
+            
+            // If the matched user is not followed and active mode is 'followed', switch back to 'users'
+            if (currentMode === 'followed' && !followedUsers.has(match.id)) {
+                currentMode = 'users';
+                if (modeFollowedContainer) modeFollowedContainer.classList.add('hidden');
+                if (modeUsersContainer) modeUsersContainer.classList.remove('hidden');
+                updateSearchPlaceholder();
+                renderCurrentMarkers();
+            }
             
             const targetZoom = 14.0;
             const currentZoom = map.getZoom();
@@ -179,21 +202,34 @@ if (searchInput) {
     });
 }
 
-// Mode Toggle Button (Double Users vs Eye SVG)
+// Mode Toggle Button (Double Users vs Heart vs Eye SVG)
 const modeToggleBtn = document.getElementById('mode-toggle-btn');
 const modeUsersContainer = document.getElementById('mode-users-container');
+const modeFollowedContainer = document.getElementById('mode-followed-container');
 const modeEyeContainer = document.getElementById('mode-eye-container');
 
-if (modeToggleBtn && modeUsersContainer && modeEyeContainer) {
+if (modeToggleBtn && modeUsersContainer && modeFollowedContainer && modeEyeContainer) {
     modeToggleBtn.addEventListener('click', () => {
         if (currentMode === 'users') {
-            currentMode = 'eye';
+            currentMode = 'followed';
             modeUsersContainer.classList.add('hidden');
+            modeFollowedContainer.classList.remove('hidden');
+            
+            updateSearchPlaceholder();
+            
+            if (followedUsers.size === 0) {
+                showNotification("Vous ne suivez aucun contributeur. Cliquez sur un profil pour le suivre !");
+            } else {
+                showNotification("Affichage uniquement des contributeurs suivis.");
+            }
+            
+            renderCurrentMarkers();
+        } else if (currentMode === 'followed') {
+            currentMode = 'eye';
+            modeFollowedContainer.classList.add('hidden');
             modeEyeContainer.classList.remove('hidden');
             
-            if (searchInput) {
-                searchInput.placeholder = "Rechercher un scan...";
-            }
+            updateSearchPlaceholder();
             
             showNotification('Mode Observateur : Vos produits scannés localement');
             
@@ -208,9 +244,7 @@ if (modeToggleBtn && modeUsersContainer && modeEyeContainer) {
             modeEyeContainer.classList.add('hidden');
             modeUsersContainer.classList.remove('hidden');
             
-            if (searchInput) {
-                searchInput.placeholder = "Rechercher un contributeur ou une ville...";
-            }
+            updateSearchPlaceholder();
             
             showNotification('Mode Communauté : Utilisateurs et listes de scans');
             

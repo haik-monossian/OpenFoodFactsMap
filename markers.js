@@ -53,9 +53,14 @@ function renderCurrentMarkers() {
     clearMarkers();
     if (mockUsers.length === 0 && localScannedProducts.length === 0) return;
 
-    if (currentMode === 'users') {
+    if (currentMode === 'users' || currentMode === 'followed') {
         // Filter users to include/exclude "Me"
-        const activeUsers = mockUsers.filter(user => showMyProfile || user.id !== 'me');
+        let activeUsers = mockUsers.filter(user => showMyProfile || user.id !== 'me');
+        
+        // Filter by followed users if active mode is 'followed'
+        if (currentMode === 'followed') {
+            activeUsers = activeUsers.filter(user => followedUsers.has(user.id));
+        }
         
         // Group mock users based on screen space overlap
         const clusters = getScreenSpaceClusters(activeUsers, 50);
