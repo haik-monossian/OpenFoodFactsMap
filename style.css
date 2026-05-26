@@ -1,0 +1,798 @@
+/* General Styles & Reset */
+:root {
+    --bg-primary: #08090d;
+    --bg-panel: rgba(12, 14, 20, 0.75);
+    --border-color: rgba(227, 246, 255, 0.12);
+    --border-hover: rgba(255, 135, 20, 0.45);
+    --accent-color: #FF8714;
+    --accent-glow: rgba(255, 135, 20, 0.3);
+    --text-primary: #FFF2DF;
+    --text-secondary: #F2E9E4;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-display: 'Space Grotesk', var(--font-sans);
+    --glass-blur: 16px;
+    --shadow-premium: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--bg-primary);
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+}
+
+#app {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+}
+
+/* Background space starfield */
+.starfield {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, #0f172a 0%, #030712 100%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.starfield::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(rgba(255, 255, 255, 0.3) 1px, transparent 40px),
+        radial-gradient(rgba(255, 255, 255, 0.2) 1.5px, transparent 30px),
+        radial-gradient(rgba(255, 255, 255, 0.15) 2px, transparent 50px);
+    background-size: 450px 450px, 320px 320px, 250px 250px;
+    background-position: 0 0, 40px 60px, 120px 240px;
+    opacity: 0.35;
+    animation: pulse-space 8s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-space {
+    0% { opacity: 0.25; }
+    100% { opacity: 0.45; }
+}
+
+/* Map Container */
+#map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* Hide standard MapLibre default elements to keep it clean, but keep credits */
+.maplibregl-ctrl-logo {
+    display: none !important;
+}
+.maplibregl-ctrl-attrib {
+    background: transparent !important;
+    color: var(--text-secondary) !important;
+    font-size: 10px !important;
+    border: none !important;
+    opacity: 0.6;
+}
+.maplibregl-ctrl-attrib a {
+    color: var(--accent-color) !important;
+    text-decoration: none;
+}
+
+/* Top-Right Floating Control Dock */
+.top-right-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.control-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.control-btn {
+    width: 40px;
+    height: 40px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(var(--glass-blur));
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.control-btn:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 0 12px var(--accent-glow);
+    transform: translateY(-1px);
+}
+
+.control-btn:active {
+    transform: translateY(1px) scale(0.97);
+}
+
+#mode-toggle-btn, #profile-visibility-btn {
+    width: auto;
+    padding: 0 14px;
+}
+
+.mode-btn-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mode-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.svg-icon {
+    transition: stroke 0.2s ease, transform 0.2s ease;
+}
+
+.control-btn:hover .svg-icon {
+    stroke: var(--accent-color);
+}
+
+/* Collapsible Search Container */
+.search-container {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0 14px;
+    overflow: hidden;
+    backdrop-filter: blur(var(--glass-blur));
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    width: 240px;
+    opacity: 1;
+}
+
+.search-container.hidden {
+    width: 0;
+    opacity: 0;
+    padding: 0;
+    border-color: transparent;
+    pointer-events: none;
+}
+
+#city-search {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    padding: 4px 0;
+}
+
+#city-search::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.search-error-tooltip {
+    position: absolute;
+    top: 46px;
+    right: 0;
+    background: rgba(239, 68, 68, 0.95);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    pointer-events: none;
+    white-space: nowrap;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.search-error-tooltip.hidden {
+    display: none;
+}
+
+/* Inline Telemetry Bar (Top-Left, Small, No Background) */
+.telemetry-bar {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 40px;
+    font-family: 'Space Grotesk', monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 2px 6px rgba(0, 0, 0, 0.9);
+    pointer-events: none;
+}
+
+.telemetry-item {
+    white-space: nowrap;
+}
+
+.telemetry-item span {
+    color: #E3F6FF;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 2px 6px rgba(0, 0, 0, 0.9);
+}
+
+#stat-lat, #stat-lng, #stat-zoom, #stat-pitch {
+    display: inline-block;
+    vertical-align: bottom;
+}
+
+#stat-lat {
+    min-width: 66px;
+}
+
+#stat-lng {
+    min-width: 74px;
+}
+
+#stat-zoom {
+    min-width: 24px;
+}
+
+#stat-pitch {
+    min-width: 20px;
+}
+
+.telemetry-separator {
+    color: rgba(227, 246, 255, 0.25);
+    font-weight: 300;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* Bottom-Right Controls Dock */
+.bottom-right-controls {
+    position: absolute;
+    bottom: 40px;
+    right: 20px;
+    z-index: 10;
+}
+
+.theme-switch-dock {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 4px;
+    backdrop-filter: blur(var(--glass-blur));
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.theme-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.theme-btn:hover {
+    color: var(--text-primary);
+}
+
+.theme-btn .svg-icon {
+    stroke: var(--text-secondary);
+}
+
+.theme-btn:hover .svg-icon {
+    stroke: var(--text-primary);
+}
+
+.theme-btn.active {
+    background: var(--accent-color);
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.theme-btn.active .svg-icon {
+    stroke: #040814;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Notification / Toast */
+.notification {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid var(--border-color);
+    padding: 12px 24px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+    box-shadow: var(--shadow-premium);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: none;
+}
+
+.notification.hidden {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+}
+
+.notification i {
+    color: var(--accent-color);
+    animation: pulse-icon 1.5s infinite;
+}
+
+@keyframes pulse-icon {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.15); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.notification-text {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+}
+
+/* Footer / Watermark overlay */
+.map-overlay-footer {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    z-index: 10;
+    font-size: 10px;
+    color: var(--text-secondary);
+    opacity: 0.6;
+    pointer-events: auto;
+    transition: opacity 0.2s ease;
+}
+
+.map-overlay-footer:hover {
+    opacity: 1;
+}
+
+.map-overlay-footer a {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+.map-overlay-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .telemetry-bar {
+        top: 10px;
+        left: 10px;
+        font-size: 9px;
+        gap: 6px;
+    }
+    .top-right-controls {
+        top: 10px;
+        right: 10px;
+        gap: 6px;
+    }
+    .search-container {
+        width: 140px;
+    }
+    .bottom-right-controls {
+        bottom: 30px;
+        right: 10px;
+    }
+}
+
+/* Custom HTML Markers */
+.user-marker {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 3px solid var(--accent-color);
+    box-shadow: 0 0 10px var(--accent-glow), 0 4px 8px rgba(0, 0, 0, 0.4);
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.user-marker:hover {
+    transform: scale(1.15);
+    border-color: #FFF2DF;
+    box-shadow: 0 0 16px var(--accent-color);
+}
+
+.user-marker.me {
+    border-color: #85bb2f !important;
+    box-shadow: 0 0 10px rgba(133, 187, 47, 0.4), 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.user-marker.me:hover {
+    border-color: #FFF2DF !important;
+    box-shadow: 0 0 16px #85bb2f !important;
+}
+
+.product-marker {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px; /* Square shape with slight rounding */
+    background-size: cover;
+    background-position: center;
+    position: relative; /* Anchor for absolute corner badge */
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.product-marker:hover {
+    transform: scale(1.15) translateY(-2px);
+    border-color: #FFF2DF !important;
+    box-shadow: 0 0 16px var(--accent-color);
+    z-index: 999;
+}
+
+.product-marker.cluster-marker {
+    border: 3px solid var(--accent-color);
+    box-shadow: 0 0 12px var(--accent-glow), 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Cluster Badge style (orange circle in top right of the square marker) */
+.marker-cluster-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: var(--accent-color);
+    color: #ffffff;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    border: 1.5px solid #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    z-index: 2;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.product-marker.cluster-marker:hover {
+    border-color: #FFF2DF;
+    box-shadow: 0 0 16px var(--accent-color);
+}
+
+/* Corner Nutri-Score Badge inside Product Marker */
+.marker-nutri-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10px;
+    font-weight: 800;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    z-index: 2;
+}
+
+/* Nutri-Score Background & Border Color Coding */
+.nutri-a { background-color: #038141 !important; color: #ffffff !important; }
+.nutri-b { background-color: #85bb2f !important; color: #ffffff !important; }
+.nutri-c { background-color: #fecb02 !important; color: #000000 !important; }
+.nutri-d { background-color: #ee8100 !important; color: #ffffff !important; }
+.nutri-e { background-color: #e63e11 !important; color: #ffffff !important; }
+
+.product-marker.nutri-a { border: 3px solid #038141; box-shadow: 0 0 10px rgba(3, 129, 65, 0.4); }
+.product-marker.nutri-b { border: 3px solid #85bb2f; box-shadow: 0 0 10px rgba(133, 187, 47, 0.4); }
+.product-marker.nutri-c { border: 3px solid #fecb02; box-shadow: 0 0 10px rgba(254, 203, 2, 0.4); }
+.product-marker.nutri-d { border: 3px solid #ee8100; box-shadow: 0 0 10px rgba(238, 129, 0, 0.4); }
+.product-marker.nutri-e { border: 3px solid #e63e11; box-shadow: 0 0 10px rgba(230, 62, 17, 0.4); }
+
+/* Hide HTML markers when they go behind the 3D globe to avoid projection alignment bugs */
+.maplibregl-marker.maplibregl-marker-covered {
+    display: none !important;
+}
+
+/* Custom Popups Styling */
+.maplibregl-popup-content {
+    background: rgba(12, 14, 20, 0.92) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 16px !important;
+    color: var(--text-primary) !important;
+    padding: 16px !important;
+    backdrop-filter: blur(12px) !important;
+    box-shadow: var(--shadow-premium) !important;
+    width: 240px;
+}
+
+.maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: rgba(12, 14, 20, 0.92) !important; }
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: rgba(12, 14, 20, 0.92) !important; }
+.maplibregl-popup-anchor-left .maplibregl-popup-tip { border-right-color: rgba(12, 14, 20, 0.92) !important; }
+.maplibregl-popup-anchor-right .maplibregl-popup-tip { border-left-color: rgba(12, 14, 20, 0.92) !important; }
+
+.maplibregl-popup-close-button {
+    color: var(--text-secondary) !important;
+    font-size: 16px !important;
+    padding: 6px 10px !important;
+    border-radius: 0 15px 0 0 !important;
+    outline: none !important;
+}
+
+.maplibregl-popup-close-button:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-primary) !important;
+}
+
+/* User Popup Inner Layout */
+.user-popup {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.user-popup-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+.user-popup-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-color);
+}
+
+.user-popup-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.user-popup-city {
+    font-size: 11px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.user-popup-city i {
+    color: var(--accent-color);
+}
+
+.user-popup-body h4 {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.user-popup-body ul.user-popup-scans-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 120px;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+/* Custom premium scrollbar for the scans list */
+.user-popup-body ul.user-popup-scans-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.user-popup-body ul.user-popup-scans-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.user-popup-body ul.user-popup-scans-list::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 4px;
+}
+
+.user-popup-body ul.user-popup-scans-list::-webkit-scrollbar-thumb:hover {
+    background: #FFF2DF;
+}
+
+.user-popup-body li {
+    font-size: 12px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.user-popup-body li i {
+    color: var(--accent-color);
+    font-size: 10px;
+}
+
+/* Product Popup Inner Layout */
+.product-popup {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.product-popup-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+.product-popup-badge {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 13px;
+}
+
+.product-popup-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.product-popup-brand {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.product-popup-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.product-popup-date {
+    font-size: 11px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.product-local-tag {
+    font-size: 10px;
+    color: #85bb2f;
+    background: rgba(133, 187, 47, 0.12);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: fit-content;
+    border: 1px solid rgba(133, 187, 47, 0.2);
+}
+
+.product-popup-image {
+    width: 100%;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    border: 1px solid var(--border-color);
+}
+
+/* User Popup Meta & Bio */
+.user-popup-meta {
+    flex: 1;
+}
+
+.user-popup-bio {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-bottom: 12px;
+    font-style: italic;
+    border-left: 2px solid var(--accent-color);
+    padding-left: 8px;
+    margin-top: 4px;
+}
+
+/* Follow Button Styles */
+.follow-btn {
+    background: transparent;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    align-self: center;
+    white-space: nowrap;
+}
+
+.follow-btn:hover {
+    background: var(--accent-color);
+    color: #08090d;
+    box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.follow-btn.following {
+    background: #85bb2f;
+    border-color: #85bb2f;
+    color: #08090d;
+}
+
+.follow-btn.following:hover {
+    background: #e63e11;
+    border-color: #e63e11;
+    color: #ffffff;
+}

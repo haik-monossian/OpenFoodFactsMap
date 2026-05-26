@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AetherGlobe - Globe 3D Interactif</title>
+    
+    <!-- Google Fonts: Inter & Space Grotesk -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- MapLibre GL JS v5 CDN -->
+    <link href="https://unpkg.com/maplibre-gl@^5.0.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@^5.0.0/dist/maplibre-gl.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Background Starfield for space feel behind the globe -->
+        <div class="starfield"></div>
+        
+        <!-- The Map Container -->
+        <div id="map"></div>
+
+        <!-- Inline Telemetry (Top-Left, Small, No Background) -->
+        <div class="telemetry-bar">
+            <span class="telemetry-item">Lat: <span id="stat-lat">0.00000°</span></span>
+            <span class="telemetry-separator">|</span>
+            <span class="telemetry-item">Lng: <span id="stat-lng">0.00000°</span></span>
+            <span class="telemetry-separator">|</span>
+            <span class="telemetry-item">Zoom: <span id="stat-zoom">1.0</span></span>
+            <span class="telemetry-separator">|</span>
+            <span class="telemetry-item">Pitch: <span id="stat-pitch">0°</span></span>
+        </div>
+
+        <!-- Top-Right Floating Control Dock -->
+        <div class="top-right-controls">
+            <!-- Collapsible Search Bar Input -->
+            <div id="search-container" class="search-container hidden">
+                <input type="text" id="city-search" placeholder="Rechercher une ville..." autocomplete="off">
+                <div id="search-error" class="search-error-tooltip hidden">Ville introuvable</div>
+            </div>
+
+            <div class="control-buttons">
+                <!-- Search Button -->
+                <button id="search-toggle-btn" class="control-btn" title="Rechercher une ville">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </button>
+
+                <!-- Mode Toggle Button (Double Users vs Eye) -->
+                <button id="mode-toggle-btn" class="control-btn" data-mode="users" title="Changer de mode">
+                    <!-- Mode 1: Double Users (Default) -->
+                    <div id="mode-users-container" class="mode-btn-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
+                        <span class="mode-text">Contributeurs</span>
+                    </div>
+                    <!-- Mode 2: Eye (Hidden initially) -->
+                    <div id="mode-eye-container" class="mode-btn-content hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                        <span class="mode-text">Mes scans</span>
+                    </div>
+                </button>
+
+                <!-- Profile Visibility Toggle Button -->
+                <button id="profile-visibility-btn" class="control-btn" title="Masquer/Afficher mon profil pour les autres">
+                    <div id="profile-shared-container" class="mode-btn-content">
+                        <i class="fa-solid fa-user-check" style="color: #85bb2f; font-size: 14px;"></i>
+                        <span class="mode-text">Profil visible (Vert)</span>
+                    </div>
+                    <div id="profile-hidden-container" class="mode-btn-content hidden">
+                        <i class="fa-solid fa-user-slash" style="color: #ee8100; font-size: 14px;"></i>
+                        <span class="mode-text">Profil masqué</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bottom-Right Theme Selector Dock -->
+        <div class="bottom-right-controls">
+            <div class="theme-switch-dock">
+                <button class="theme-btn active" data-theme="dark" title="Mode Sombre">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+                <button class="theme-btn" data-theme="light" title="Mode Clair">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Dynamic Feedback Overlay / Notification toast -->
+        <div id="notification" class="notification hidden">
+            <i class="fa-solid fa-compass-drafting"></i>
+            <span class="notification-text">Déplacement vers Paris...</span>
+        </div>
+
+        <!-- Watermark / Footer credits -->
+        <footer class="map-overlay-footer">
+            <span>Propulsé par <a href="https://maplibre.org/" target="_blank">MapLibre</a> | Données © <a href="https://openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors, <a href="https://carto.com/" target="_blank">CARTO</a></span>
+        </footer>
+    </div>
+
+    <!-- Custom JS Application components -->
+    <script src="config.js"></script>
+    <script src="map.js"></script>
+    <script src="markers.js"></script>
+    <script src="controls.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

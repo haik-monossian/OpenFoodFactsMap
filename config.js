@@ -1,0 +1,286 @@
+// Configuration for CartoDB map styles
+const styleURLs = {
+    dark: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+    light: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
+};
+
+// Fallback Data if loading data.json fails (e.g., due to CORS on file:// protocol)
+const fallbackData = {
+    "mockUsers": [
+        {
+            "id": "me",
+            "name": "Moi (Vous)",
+            "city": "Paris, France",
+            "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80",
+            "description": "Votre profil public. Vous pouvez masquer votre position avec le bouton en haut à droite.",
+            "coords": [2.3482, 48.8530],
+            "products": ["Jus d'Orange Pressé Bio", "Tablette Chocolat Noir 85%"]
+        },
+        {
+            "id": 1,
+            "name": "Lucas",
+            "city": "Paris, France",
+            "avatar": "https://i.pravatar.cc/100?img=33",
+            "description": "Passionné d'alimentation saine et de course à pied. Adepte du zéro déchet !",
+            "coords": [2.3522, 48.8566],
+            "products": ["Chocolat Noir 85% Cacao", "Jus d'Orange Bio", "Lait d'Amande sans Sucre"]
+        },
+        {
+            "id": 2,
+            "name": "Sophie",
+            "city": "Lyon, France",
+            "avatar": "https://i.pravatar.cc/100?img=49",
+            "description": "À la recherche des meilleurs produits bio et locaux en région lyonnaise.",
+            "coords": [4.8357, 45.7640],
+            "products": ["Pesto Verde alla Genovese", "Galettes de Riz Complet", "Yaourt au Soja Nature"]
+        },
+        {
+            "id": 3,
+            "name": "Mélanie",
+            "city": "Marseille, France",
+            "avatar": "https://i.pravatar.cc/100?img=47",
+            "description": "Amoureuse de cuisine méditerranéenne, du soleil et des plats faits maison.",
+            "coords": [5.3698, 43.2965],
+            "products": ["Huile d'Olive Vierge Extra", "Houmous Classique", "Sardines à la Tomate"]
+        },
+        {
+            "id": 4,
+            "name": "Thomas",
+            "city": "Bordeaux, France",
+            "avatar": "https://i.pravatar.cc/100?img=12",
+            "description": "Adepte du batch cooking, du pain de seigle et des ingrédients bruts et sains.",
+            "coords": [-0.5792, 44.8378],
+            "products": ["Pain Complet au Seigle", "Kéfir de Fruits Citron", "Beurre de Cacahuètes"]
+        },
+        {
+            "id": 5,
+            "name": "Kenji",
+            "city": "Tokyo, Japon",
+            "avatar": "https://i.pravatar.cc/100?img=60",
+            "description": "Grand amateur de matcha, de tofu frais et de saveurs japonaises authentiques.",
+            "coords": [139.6917, 35.6895],
+            "products": ["Thé Vert Matcha Bio", "Tofu Ferme Nature", "Algues Nori Séchées"]
+        },
+        {
+            "id": 6,
+            "name": "Emma",
+            "city": "New York, USA",
+            "avatar": "https://i.pravatar.cc/100?img=41",
+            "description": "Diététicienne à Brooklyn. Je scanne tout pour dénicher les pépites nutritionnelles.",
+            "coords": [-74.0060, 40.7128],
+            "products": ["Granola Avoine & Miel", "Lait d'Avoine Barista", "Sirop d'Érable Pur"]
+        },
+        {
+            "id": 7,
+            "name": "Liam",
+            "city": "Londres, Royaume-Uni",
+            "avatar": "https://i.pravatar.cc/100?img=68",
+            "description": "Toujours en quête d'alternatives végétales saines et de snacks gourmands peu sucrés.",
+            "coords": [-0.1278, 51.5074],
+            "products": ["Cheddar Extra Mature", "Chips de Lentilles Salées", "Marmelade d'Oranges"]
+        },
+        {
+            "id": 8,
+            "name": "Elena",
+            "city": "Rome, Italie",
+            "avatar": "https://i.pravatar.cc/100?img=5",
+            "description": "Amoureuse de bonne gastronomie, de vin naturel et de pâtes fraîches traditionnelles.",
+            "coords": [12.4964, 41.9028],
+            "products": ["Pâtes de Blé Dur Bio", "Sauce Tomate Basilic", "Fromage Parmigiano Reggiano"]
+        },
+        {
+            "id": 9,
+            "name": "Nicolas",
+            "city": "Paris, France",
+            "avatar": "https://i.pravatar.cc/100?img=15",
+            "description": "Gourmand et adepte du bio sous toutes ses formes.",
+            "coords": [2.3600, 48.8600],
+            "products": ["Pain de Campagne Bio", "Fromage de Chèvre Frais"]
+        },
+        {
+            "id": 10,
+            "name": "Chloé",
+            "city": "Paris, France",
+            "avatar": "https://i.pravatar.cc/100?img=22",
+            "description": "Scanneuse impulsive de desserts gourmands et fruités.",
+            "coords": [2.3400, 48.8400],
+            "products": ["Tarte aux Pommes", "Macarons Chocolat"]
+        },
+        {
+            "id": 11,
+            "name": "Alexandre",
+            "city": "Marseille, France",
+            "avatar": "https://i.pravatar.cc/100?img=18",
+            "description": "Amateur de poissons de roche, de produits de la mer et de soleil.",
+            "coords": [5.3800, 43.2900],
+            "products": ["Pastis Artisanal", "Olives Vertes de Provence"]
+        },
+        {
+            "id": 12,
+            "name": "Julie",
+            "city": "Marseille, France",
+            "avatar": "https://i.pravatar.cc/100?img=32",
+            "description": "Fidèle aux producteurs locaux du quartier du Panier.",
+            "coords": [5.3600, 43.3000],
+            "products": ["Navettes Fleur d'Oranger", "Miel de Lavande AOP"]
+        }
+    ],
+    "localScannedProducts": [
+        {
+            "id": 101,
+            "name": "Jus d'Orange Pressé Bio",
+            "brand": "Bjorg",
+            "nutriscore": "B",
+            "date": "26/05/2026 à 10:14",
+            "image": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=200&q=80",
+            "coords": [2.3422, 48.8616]
+        },
+        {
+            "id": 102,
+            "name": "Tablette Chocolat Noir 85%",
+            "brand": "Alter Eco",
+            "nutriscore": "A",
+            "date": "26/05/2026 à 14:32",
+            "image": "https://images.unsplash.com/photo-1548907040-4d42b52115ca?w=200&q=80",
+            "coords": [2.3582, 48.8526]
+        },
+        {
+            "id": 103,
+            "name": "Houmous Pois Chiches & Sésame",
+            "brand": "L'Atelier Blini",
+            "nutriscore": "A",
+            "date": "25/05/2026 à 19:45",
+            "image": "https://images.unsplash.com/photo-1577906096429-f73c2c312435?w=200&q=80",
+            "coords": [2.3622, 48.8686]
+        },
+        {
+            "id": 104,
+            "name": "Yaourt Grec Nature Authentique",
+            "brand": "Fage",
+            "nutriscore": "A",
+            "date": "24/05/2026 à 08:20",
+            "image": "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=200&q=80",
+            "coords": [2.3282, 48.8456]
+        },
+        {
+            "id": 105,
+            "name": "Pâte à Tartiner Noisettes Cocoa",
+            "brand": "Nocciolata",
+            "nutriscore": "D",
+            "date": "23/05/2026 à 16:10",
+            "image": "https://images.unsplash.com/photo-1587314168485-3236d6710814?w=200&q=80",
+            "coords": [2.3782, 48.8506]
+        },
+        {
+            "id": 106,
+            "name": "Salade Quinoa Edamame Poulet",
+            "brand": "Sodebo",
+            "nutriscore": "B",
+            "date": "22/05/2026 à 12:40",
+            "image": "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=200&q=80",
+            "coords": [2.3122, 48.8756]
+        },
+        {
+            "id": 107,
+            "name": "Chips de Pommes de Terre au Sel",
+            "brand": "Tyrells",
+            "nutriscore": "E",
+            "date": "20/05/2026 à 21:05",
+            "image": "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=200&q=80",
+            "coords": [2.3542, 48.8796]
+        },
+        {
+            "id": 108,
+            "name": "Bouillabaisse de Marseille",
+            "brand": "Ferrigno",
+            "nutriscore": "A",
+            "date": "26/05/2026 à 11:20",
+            "image": "https://images.unsplash.com/photo-1547592180-85f173990554?w=200&q=80",
+            "coords": [5.3658, 43.2945]
+        },
+        {
+            "id": 109,
+            "name": "Tapenade d'Olives Noires",
+            "brand": "Jean Martin",
+            "nutriscore": "C",
+            "date": "26/05/2026 à 12:45",
+            "image": "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=200&q=80",
+            "coords": [5.3728, 43.2985]
+        },
+        {
+            "id": 110,
+            "name": "Navettes Provençales",
+            "brand": "Four des Navettes",
+            "nutriscore": "D",
+            "date": "25/05/2026 à 15:30",
+            "image": "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=200&q=80",
+            "coords": [5.3618, 43.2915]
+        },
+        {
+            "id": 111,
+            "name": "Sardines du Vieux-Port",
+            "brand": "La Belle-Iloise",
+            "nutriscore": "A",
+            "date": "25/05/2026 à 18:10",
+            "image": "https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=200&q=80",
+            "coords": [5.3528, 43.2955]
+        },
+        {
+            "id": 112,
+            "name": "Anchoïade de Marseille",
+            "brand": "Coudène",
+            "nutriscore": "C",
+            "date": "24/05/2026 à 19:15",
+            "image": "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=200&q=80",
+            "coords": [5.3788, 43.2885]
+        },
+        {
+            "id": 113,
+            "name": "Aïoli Frais Traditionnel",
+            "brand": "L'Atelier Blini",
+            "nutriscore": "D",
+            "date": "24/05/2026 à 20:30",
+            "image": "https://images.unsplash.com/photo-1470324161839-ce2bb6fa6bc3?w=200&q=80",
+            "coords": [5.3688, 43.3055]
+        },
+        {
+            "id": 114,
+            "name": "Panisses Aromatisés",
+            "brand": "Soleil Sud",
+            "nutriscore": "B",
+            "date": "23/05/2026 à 12:15",
+            "image": "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=200&q=80",
+            "coords": [5.3428, 43.3185]
+        },
+        {
+            "id": 115,
+            "name": "Coulis de Tomates de Provence",
+            "brand": "Mutti",
+            "nutriscore": "A",
+            "date": "22/05/2026 à 16:50",
+            "image": "https://images.unsplash.com/photo-1595855759920-86582396756a?w=200&q=80",
+            "coords": [5.3598, 43.3115]
+        }
+    ]
+};
+
+// Global variables for active data
+let mockUsers = [];
+let localScannedProducts = [];
+
+// Session state for followed users
+const followedUsers = new Set();
+
+// State variables
+let userInteracting = false;
+let spinEnabled = true;
+let isFlying = false;
+let currentMode = 'users'; // default mode: 'users' (Double User SVG)
+let showMyProfile = true; // whether the user's profile is visible to others
+const rotationSpeed = 1.8; // Degrees per second
+
+// Threshold for clustering in private scanned products mode
+let lastZoomThreshold = null;
+
+// Arrays to hold MapLibre Markers
+let activeMarkers = [];
